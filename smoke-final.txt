@@ -1,0 +1,5 @@
+charts -> 200
+http://localhost:5199/artists -> 200 imgTags=24 deezerRefs=48
+http://localhost:5199/artist/taylor-swift -> 200 imgTags=1 deezerRefs=2
+http://localhost:5199/artists/Taylor%20Swift -> 200 imgTags=11 deezerRefs=3
+/song/radiohead-creep -> 200
