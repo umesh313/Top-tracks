@@ -70,6 +70,22 @@ function toGenreTrack(t: LfmTrack, i: number): GenreTrack {
   return { rank: i + 1, title: String(t.name ?? "—"), artist: String(t.artist?.name ?? "Unknown"), playcount: Number(t.playcount ?? 0) || 0, listeners: Number(t.listeners ?? 0) || 0, cover: pickImage(t.image), durationLabel: "—" };
 }
 
+/** Current global trending tracks from Last.fm, separate from the weekly SONGBOARD chart. */
+export const getTrendingTracks = createServerFn({ method: "GET" })
+  .handler(async (): Promise<{ tracks: GenreTrack[] }> => {
+    const ck = "chart-trending-tracks";
+    const hit = browseGet<{ tracks: GenreTrack[] }>(ck);
+    if (hit) return hit;
+    const params = new URLSearchParams({ method: "chart.gettoptracks", api_key: lastFmKey(), format: "json", limit: "50" });
+    const res = await fetchWithTimeout(`https://ws.audioscrobbler.com/2.0/?${params}`);
+    if (!res.ok) throw new Error(`Last.fm trending tracks failed (${res.status})`);
+    const json = (await res.json()) as { tracks?: { track?: LfmTrack[] } };
+    const tracks = (json.tracks?.track ?? []).filter((t) => t.name?.trim()).map(toGenreTrack);
+    const out = { tracks };
+    browseSet(ck, out);
+    return out;
+  });
+
 /** Paginated global artist database: chart.gettopartists (1000 artists, 20 pages). */
 export const browseArtists = createServerFn({ method: "GET" })
   .inputValidator((d: { page?: number }) => z.object({ page: z.number().int().min(1).max(500).optional() }).parse(d ?? {}))
@@ -421,4 +437,3 @@ export const getArtistTopSongs = createServerFn({ method: "GET" })
     topSongsCache.set(ck2, { at: Date.now(), data: out });
     return out;
   });
-
