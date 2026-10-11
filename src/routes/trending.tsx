@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
+import { keepPreviousData, queryOptions, useQuery } from "@tanstack/react-query";
 import { getTrendingTracks } from "@/lib/artists.functions";
 import { BrowseTrackRow } from "@/components/sb/browse";
 import { LiveBadge } from "@/components/sb/bits";
@@ -8,10 +8,13 @@ const q = queryOptions({
   queryKey: ["trending", "tracks"],
   queryFn: () => getTrendingTracks(),
   staleTime: 5 * 60 * 1000,
+  placeholderData: keepPreviousData,
 });
 
 export const Route = createFileRoute("/trending")({
-  loader: ({ context }) => context.queryClient.ensureQueryData(q),
+  loader: ({ context }) => {
+    void context.queryClient.prefetchQuery(q).catch(() => null);
+  },
   head: () => ({
     meta: [
       { title: "Trending Songs — SONGBOARD" },
@@ -26,7 +29,8 @@ export const Route = createFileRoute("/trending")({
 });
 
 function Page() {
-  const { data } = useSuspenseQuery(q);
+  const { data } = useQuery(q);
+  if (!data) return null;
   return (
     <main className="mx-auto max-w-6xl px-4 py-12 md:px-6">
       <div className="mb-2">

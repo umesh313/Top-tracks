@@ -509,46 +509,63 @@ export type LiveChartRow = {
 
 /** Live Last.fm search (tracks + artists). No database involved. */
 export async function searchLiveCatalog(q: string): Promise<{
-  songs: LiveChartRow["song"][];
-  artists: { id: string; slug: string; name: string; hue: number }[];
+  songs: (LiveChartRow["song"] & { playcount: number; listeners: number })[];
+  artists: { id: string; slug: string; name: string; hue: number; image: string | null; listeners: number }[];
 }> {
   const key = lastFmKey();
   const query = q.trim().slice(0, 80);
   if (query.length < 2) return { songs: [], artists: [] };
   const [trackRes, artistRes] = await Promise.all([
-    fetch(`https://ws.audioscrobbler.com/2.0/?${new URLSearchParams({ method: "track.search", track: query, api_key: key, format: "json", limit: "12" })}`),
-    fetch(`https://ws.audioscrobbler.com/2.0/?${new URLSearchParams({ method: "artist.search", artist: query, api_key: key, format: "json", limit: "8" })}`),
+    fetchWithTimeout(`https://ws.audioscrobbler.com/2.0/?${new URLSearchParams({ method: "track.search", track: query, api_key: key, format: "json", limit: "12" })}`),
+    fetchWithTimeout(`https://ws.audioscrobbler.com/2.0/?${new URLSearchParams({ method: "artist.search", artist: query, api_key: key, format: "json", limit: "8" })}`),
   ]);
-  const songs: LiveChartRow["song"][] = [];
-  if (trackRes.ok) {
-    const json = (await trackRes.json()) as { results?: { trackmatches?: { track?: { name?: string; artist?: string; mbid?: string; image?: Img[] }[] } } };
-    for (const t of json.results?.trackmatches?.track ?? []) {
-      const title = String(t.name ?? "").trim();
-      const artist = String(t.artist ?? "").trim();
-      if (!title || !artist) continue;
-      const hue = hueFromId(`${artist}-${title}`);
-      songs.push({
-        id: String(t.mbid || `${artist}::${title}`),
-        slug: `${slugify(artist)}-${slugify(title)}`.slice(0, 90),
-        title,
-        hue,
-        image: pickImage(t.image),
-        genre_id: null,
-        country_code: null,
-        release_date: null,
-        duration_sec: 210,
-        artist: { id: slugify(artist), slug: slugify(artist), name: artist, hue: hueFromId(artist) },
-      });
-    }
+  if (!trackRes.ok) throw new Error(`Last.fm song search failed (${trackRes.status})`);
+  if (!artistRes.ok) throw new Error(`Last.fm artist search failed (${artistRes.status})`);
+  const trackJson = (await trackRes.json()) as {
+    error?: number;
+    message?: string;
+    results?: { trackmatches?: { track?: { name?: string; artist?: string; mbid?: string; image?: Img[]; playcount?: string; listeners?: string }[] } };
+  };
+  const artistJson = (await artistRes.json()) as {
+    error?: number;
+    message?: string;
+    results?: { artistmatches?: { artist?: { name?: string; mbid?: string; image?: Img[]; listeners?: string }[] } };
+  };
+  if (trackJson.error) throw new Error(`Last.fm song search failed: ${trackJson.message ?? "Unknown error"}`);
+  if (artistJson.error) throw new Error(`Last.fm artist search failed: ${artistJson.message ?? "Unknown error"}`);
+  const songs: (LiveChartRow["song"] & { playcount: number; listeners: number })[] = [];
+  for (const t of trackJson.results?.trackmatches?.track ?? []) {
+    const title = String(t.name ?? "").trim();
+    const artist = String(t.artist ?? "").trim();
+    if (!title || !artist) continue;
+    const hue = hueFromId(`${artist}-${title}`);
+    songs.push({
+      id: String(t.mbid || `${artist}::${title}`),
+      slug: `${slugify(artist)}-${slugify(title)}`.slice(0, 90),
+      title,
+      hue,
+      image: pickImage(t.image),
+      genre_id: null,
+      country_code: null,
+      release_date: null,
+      duration_sec: 210,
+      playcount: Number(t.playcount ?? 0) || 0,
+      listeners: Number(t.listeners ?? 0) || 0,
+      artist: { id: slugify(artist), slug: slugify(artist), name: artist, hue: hueFromId(artist) },
+    });
   }
-  const artists: { id: string; slug: string; name: string; hue: number }[] = [];
-  if (artistRes.ok) {
-    const json = (await artistRes.json()) as { results?: { artistmatches?: { artist?: { name?: string; mbid?: string }[] } } };
-    for (const a of json.results?.artistmatches?.artist ?? []) {
-      const name = String(a.name ?? "").trim();
-      if (!name) continue;
-      artists.push({ id: String(a.mbid || slugify(name)), slug: slugify(name), name, hue: hueFromId(name) });
-    }
+  const artists: { id: string; slug: string; name: string; hue: number; image: string | null; listeners: number }[] = [];
+  for (const a of artistJson.results?.artistmatches?.artist ?? []) {
+    const name = String(a.name ?? "").trim();
+    if (!name) continue;
+    artists.push({
+      id: String(a.mbid || slugify(name)),
+      slug: slugify(name),
+      name,
+      hue: hueFromId(name),
+      image: pickImage(a.image),
+      listeners: Number(a.listeners ?? 0) || 0,
+    });
   }
   return { songs, artists };
 }

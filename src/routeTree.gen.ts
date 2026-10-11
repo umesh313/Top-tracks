@@ -10,12 +10,15 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AboutRouteImport } from './routes/about'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as ArtistsRouteImport } from './routes/artists'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as ChartsRouteImport } from './routes/charts'
 import { Route as CountriesRouteImport } from './routes/countries'
+import { Route as DiscoverRouteImport } from './routes/discover'
 import { Route as GenresRouteImport } from './routes/genres'
+import { Route as MethodologyRouteImport } from './routes/methodology'
 import { Route as MoversRouteImport } from './routes/movers'
 import { Route as PeopleRouteImport } from './routes/people'
 import { Route as ProfileRouteImport } from './routes/profile'
@@ -30,6 +33,11 @@ import { Route as SongSlugRouteImport } from './routes/song.$slug'
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AboutRoute = AboutRouteImport.update({
+  id: '/about',
+  path: '/about',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminRoute = AdminRouteImport.update({
@@ -57,9 +65,19 @@ const CountriesRoute = CountriesRouteImport.update({
   path: '/countries',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DiscoverRoute = DiscoverRouteImport.update({
+  id: '/discover',
+  path: '/discover',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const GenresRoute = GenresRouteImport.update({
   id: '/genres',
   path: '/genres',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MethodologyRoute = MethodologyRouteImport.update({
+  id: '/methodology',
+  path: '/methodology',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MoversRoute = MoversRouteImport.update({
@@ -115,12 +133,15 @@ const SongSlugRoute = SongSlugRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/about': typeof AboutRoute
   '/admin': typeof AdminRoute
   '/artists': typeof ArtistsRoute
   '/auth': typeof AuthRoute
   '/charts': typeof ChartsRoute
   '/countries': typeof CountriesRoute
+  '/discover': typeof DiscoverRoute
   '/genres': typeof GenresRoute
+  '/methodology': typeof MethodologyRoute
   '/movers': typeof MoversRoute
   '/people': typeof PeopleRoute
   '/profile': typeof ProfileRoute
@@ -134,12 +155,15 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/about': typeof AboutRoute
   '/admin': typeof AdminRoute
   '/artists': typeof ArtistsRoute
   '/auth': typeof AuthRoute
   '/charts': typeof ChartsRoute
   '/countries': typeof CountriesRoute
+  '/discover': typeof DiscoverRoute
   '/genres': typeof GenresRoute
+  '/methodology': typeof MethodologyRoute
   '/movers': typeof MoversRoute
   '/people': typeof PeopleRoute
   '/profile': typeof ProfileRoute
@@ -154,12 +178,15 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/about': typeof AboutRoute
   '/admin': typeof AdminRoute
   '/artists': typeof ArtistsRoute
   '/auth': typeof AuthRoute
   '/charts': typeof ChartsRoute
   '/countries': typeof CountriesRoute
+  '/discover': typeof DiscoverRoute
   '/genres': typeof GenresRoute
+  '/methodology': typeof MethodologyRoute
   '/movers': typeof MoversRoute
   '/people': typeof PeopleRoute
   '/profile': typeof ProfileRoute
@@ -175,12 +202,15 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/about'
     | '/admin'
     | '/artists'
     | '/auth'
     | '/charts'
     | '/countries'
+    | '/discover'
     | '/genres'
+    | '/methodology'
     | '/movers'
     | '/people'
     | '/profile'
@@ -194,12 +224,15 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/about'
     | '/admin'
     | '/artists'
     | '/auth'
     | '/charts'
     | '/countries'
+    | '/discover'
     | '/genres'
+    | '/methodology'
     | '/movers'
     | '/people'
     | '/profile'
@@ -213,12 +246,15 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/about'
     | '/admin'
     | '/artists'
     | '/auth'
     | '/charts'
     | '/countries'
+    | '/discover'
     | '/genres'
+    | '/methodology'
     | '/movers'
     | '/people'
     | '/profile'
@@ -233,12 +269,15 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AboutRoute: typeof AboutRoute
   AdminRoute: typeof AdminRoute
   ArtistsRoute: typeof ArtistsRoute
   AuthRoute: typeof AuthRoute
   ChartsRoute: typeof ChartsRoute
   CountriesRoute: typeof CountriesRoute
+  DiscoverRoute: typeof DiscoverRoute
   GenresRoute: typeof GenresRoute
+  MethodologyRoute: typeof MethodologyRoute
   MoversRoute: typeof MoversRoute
   PeopleRoute: typeof PeopleRoute
   ProfileRoute: typeof ProfileRoute
@@ -258,6 +297,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/about': {
+      id: '/about'
+      path: '/about'
+      fullPath: '/about'
+      preLoaderRoute: typeof AboutRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin': {
@@ -295,11 +341,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CountriesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/discover': {
+      id: '/discover'
+      path: '/discover'
+      fullPath: '/discover'
+      preLoaderRoute: typeof DiscoverRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/genres': {
       id: '/genres'
       path: '/genres'
       fullPath: '/genres'
       preLoaderRoute: typeof GenresRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/methodology': {
+      id: '/methodology'
+      path: '/methodology'
+      fullPath: '/methodology'
+      preLoaderRoute: typeof MethodologyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/movers': {
@@ -377,12 +437,15 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AboutRoute: AboutRoute,
   AdminRoute: AdminRoute,
   ArtistsRoute: ArtistsRoute,
   AuthRoute: AuthRoute,
   ChartsRoute: ChartsRoute,
   CountriesRoute: CountriesRoute,
+  DiscoverRoute: DiscoverRoute,
   GenresRoute: GenresRoute,
+  MethodologyRoute: MethodologyRoute,
   MoversRoute: MoversRoute,
   PeopleRoute: PeopleRoute,
   ProfileRoute: ProfileRoute,
